@@ -1,0 +1,28 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  TopicName:
+    Type: String
+    Description: Name for the SNS topic
+    Default: 'study-topic'
+
+Resources:
+  StudyTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Ref TopicName
+      DisplayName: !Ref TopicName
+      Tags:
+        - Key: Name
+          Value: !Ref TopicName
+        - Key: Environment
+          Value: Development
+
+Outputs:
+  SNSTopicName:
+    Description: Name of the SNS topic
+    Value: !GetAtt StudyTopic.TopicName
+
+  SNSTopicArn:
+    Description: ARN of the SNS topic
+    Value: !Ref StudyTopic

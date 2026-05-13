@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Service.Api.Entities;
 using System.Text.Json;
+using Service.Api.Messaging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.Api.Generator;
 
-public class GeneratorService(IDistributedCache _cache, IConfiguration _configuration, ILogger<GeneratorService> _logger) : IGeneratorService
+public class GeneratorService(IDistributedCache _cache, IConfiguration _configuration, ILogger<GeneratorService> _logger, IProducerService _producer) : IGeneratorService
 {
     private readonly TimeSpan _cacheExpiration = TimeSpan.FromSeconds(_configuration.GetSection("Cache").GetValue("CacheExpiration", 3600));
     public async Task<StudyCourse> ProcessCourse(int id)
@@ -22,6 +24,7 @@ public class GeneratorService(IDistributedCache _cache, IConfiguration _configur
             _logger.LogInformation("Course with ID: {CourseId} not found in cache, generating new course", id);
             course = StudyCoureGenerator.GenerateCourse(id);
             _logger.LogInformation("Populating cache with course {id}", id);
+            await _producer.SendMessage(course);
             await SetCache(course);
             return course;
         }
